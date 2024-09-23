@@ -1,11 +1,11 @@
 import hero from "../src/assets/hero.svg";
-
+import SearchBar from "./components/SearchBar";
 
 function App() {
   return (
     <div>
-      <img src={hero} alt="hero-image" />
-      <h1>Hello niggas</h1>
+      <img className="pt-14" src={hero} alt="hero-image" />
+      <SearchBar />
     </div>
   );
 }
