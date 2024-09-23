@@ -1,26 +1,83 @@
+import { useState } from "react";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import Select, { SelectChangeEvent } from "@mui/material/Select";
+import { CompareArrows, PersonOutline } from "@mui/icons-material";
+
 export default function SearchBar() {
+  const [trip, setTrip] = useState("");
+  const [passenger, setPassenger] = useState("");
+
+  const handleChange = (event: SelectChangeEvent) => {
+    setTrip(event.target.value);
+  };
+
   return (
     <div className="container mx-auto flex justify-center items-center p-2 md:p-0">
       <div className="border border-gray-300 p-6 grid grid-cols-1 gap-6 bg-white shadow-lg rounded-lg">
-        <div className="flex flex-col md:flex-row">
-          <div className="">
-            <select className="border p-2 rounded">
-              <option>Round-trip</option>
-              <option>Missouri</option>
-              <option>texas</option>
-            </select>
+        <div className="flex flex-row md:flex-row">
+          <FormControl variant="standard" sx={{ m: 1, minWidth: 150 }}>
+            <InputLabel id="demo-simple-select-standard-label">
+              <CompareArrows /> Round trip{" "}
+            </InputLabel>
+            <Select
+              labelId="demo-simple-select-standard-label"
+              id="demo-simple-select-standard"
+              value={trip}
+              onChange={handleChange}
+              label="Age"
+            >
+              <MenuItem value="">
+                <em>None</em>
+              </MenuItem>
+              <MenuItem value={10}>Ten</MenuItem>
+              <MenuItem value={20}>Twenty</MenuItem>
+              <MenuItem value={30}>Thirty</MenuItem>
+            </Select>
+          </FormControl>
+          <div className="pt-6 md:pt-0 md:pl-6">
+            <FormControl variant="standard" sx={{ m: 1, minWidth: 18 }}>
+              <InputLabel id="demo-simple-select-standard-label">
+                <PersonOutline />{" "}
+              </InputLabel>
+              <Select
+                labelId="demo-simple-select-standard-label"
+                id="demo-simple-select-standard"
+                value={passenger}
+                onChange={handleChange}
+                label="Age"
+              >
+                <MenuItem value="">
+                  <em>1</em>
+                </MenuItem>
+                <MenuItem value={1}>2</MenuItem>
+                <MenuItem value={2}>3</MenuItem>
+                <MenuItem value={3}>4</MenuItem>
+              </Select>
+            </FormControl>
           </div>
           <div className="pt-6 md:pt-0 md:pl-6">
-            <select className="border p-2 rounded">
-              <option>4 Passangers</option>
-              <option>3 Passangers</option>
-              <option>2 Passangers</option>
-            </select>
-          </div>
-          <div className="pt-6 md:pt-0 md:pl-6">
-            <select className="border p-2 rounded">
-              <option>Economy</option>
-            </select>
+            <FormControl variant="standard" sx={{ m: 1, minWidth: 150 }}>
+              <InputLabel id="demo-simple-select-standard-label">
+                Economy
+              </InputLabel>
+              <Select
+                labelId="demo-simple-select-standard-label"
+                id="demo-simple-select-standard"
+                value={passenger}
+                onChange={handleChange}
+                label="Age"
+              >
+                <MenuItem value="Economy">
+                  <em>Economy</em>
+                </MenuItem>
+                {/* <MenuItem value={"Economoy"}>Economy</MenuItem> */}
+                <MenuItem value={"Premium Economy"}>Premium Economy</MenuItem>
+                <MenuItem value={"Business"}>Business</MenuItem>
+                <MenuItem value={"First"}>First</MenuItem>
+              </Select>
+            </FormControl>
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
