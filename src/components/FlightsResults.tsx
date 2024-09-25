@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Accordion,
   AccordionSummary,
@@ -6,82 +6,82 @@ import {
   Typography,
   Stack,
   Snackbar,
-  Alert,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import Alert from "@mui/material/Alert";
 import Noflights from "../assets/no-flight.png";
 
-export default function FlightResultsAccordion({
-  flights,
-}: {
-  flights: any[];
-}) {
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
+export default function FlightResultsAccordion({ flights }: { flights: any }) {
+  const [error, setError] = useState<string | null>(null);
+  const itineraries = flights?.data?.itineraries || [];
 
-  // Function to handle Snackbar close
-  const handleSnackbarClose = () => {
-    setSnackbarOpen(false);
-  };
-
-  // useEffect to check if flights is an array
-  useEffect(() => {
-    if (!Array.isArray(flights)) {
-      setSnackbarMessage("Invalid flight data.");
-      setSnackbarOpen(true);
-    }
-  }, [flights]);
-
-  if (!Array.isArray(flights)) {
-    return null;
-  }
-
-  if (flights.length === 0) {
+  if (!itineraries || itineraries.length === 0) {
     return (
       <div>
         <img className="m-auto" src={Noflights} alt="no-flights" />
-        <h1 className="font-semibold text-2xl lg:text-4xl text-center">No flights available</h1>
+        <h1 className="font-semibold text-2xl lg:text-4xl text-center">
+          No flights available
+        </h1>
       </div>
     );
   }
 
   return (
-    <Stack className="mx-8 lg:mx-24" spacing={2}>
-      {flights.map((flight: any, index: number) => (
-        <Accordion key={index}>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography>
-              {flight.departureDate} - {flight.price} USD
-            </Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Typography>
-              <strong>Departure:</strong> {flight.departureTime} from{" "}
-              {flight.origin}
-              <br />
-              <strong>Arrival:</strong> {flight.arrivalTime} at{" "}
-              {flight.destination}
-              <br />
-              <strong>Duration:</strong> {flight.duration}
-              <br />
-              <strong>Airline:</strong> {flight.airline}
-            </Typography>
-          </AccordionDetails>
-        </Accordion>
-      ))}
+    <Stack className="lg:mx-24" spacing={2}>
+      {itineraries.map((itinerary: any, index: number) => {
+        const price = itinerary?.price?.formatted || "N/A";
+        const legs = itinerary?.legs || [];
+        const firstLeg = legs[0];
+        const departure = firstLeg?.departure || "N/A";
+        const arrival = firstLeg?.arrival || "N/A";
+        const origin = firstLeg?.origin?.name || "Unknown";
+        const destination = firstLeg?.destination?.name || "Unknown";
+        const durationInMinutes = firstLeg?.durationInMinutes || "N/A";
+        const carrier =
+          firstLeg?.carriers?.marketing[0]?.name || "Unknown Airline";
+        const logoUrl = firstLeg?.carriers?.marketing[0]?.logoUrl || "";
 
-      {/* Snackbar for error handling */}
+        return (
+          <Accordion key={index}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography>
+                <strong>Departure:</strong>{" "}
+                {new Date(departure).toLocaleTimeString()} from {origin} {"  "}
+                {new Date(departure).toLocaleDateString()} - {price}
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Typography>
+                <strong>Departure:</strong>{" "}
+                {new Date(departure).toLocaleTimeString()} from {origin}
+                <br />
+                <strong>Arrival:</strong>{" "}
+                {new Date(arrival).toLocaleTimeString()} at {destination}
+                <br />
+                <strong>Duration:</strong> {Math.floor(durationInMinutes / 60)}h{" "}
+                {durationInMinutes % 60}m
+                <br />
+                <strong>Airline:</strong> {carrier}{" "}
+                {logoUrl && (
+                  <img
+                    src={logoUrl}
+                    alt={carrier}
+                    style={{ width: "20px", height: "20px", marginLeft: "5px" }}
+                  />
+                )}
+              </Typography>
+            </AccordionDetails>
+          </Accordion>
+        );
+      })}
+
       <Snackbar
-        open={snackbarOpen}
+        open={!!error}
         autoHideDuration={6000}
-        onClose={handleSnackbarClose}
+        onClose={() => setError(null)}
       >
-        <Alert
-          onClose={handleSnackbarClose}
-          severity="error"
-          sx={{ width: "100%" }}
-        >
-          {snackbarMessage}
+        <Alert onClose={() => setError(null)} severity="error">
+          {error}
         </Alert>
       </Snackbar>
     </Stack>

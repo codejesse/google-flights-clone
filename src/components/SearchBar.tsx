@@ -134,16 +134,13 @@ export default function SearchBar() {
       );
       setFlights(response.data);
       setIsLoading(false);
-      console.log(flights);
-      console.log(response.data)
-      console.log(flights);
     } catch (error) {
       console.error("Error fetching flights:", error);
       setSnackbarMessage("Error fetching flights.");
       setSnackbarOpen(true);
     }
   };
-  console.log(origin);
+//   console.log(origin);
 //   console.log(destinationId);
 //   console.log(origin);
 //   console.log(type.toLowerCase());
