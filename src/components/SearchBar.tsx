@@ -223,7 +223,7 @@ export default function SearchBar() {
                   id="manageable-states-demo"
                   value={origin}
                   inputValue={originInputValue}
-                  onInputChange={(event, newInputValue) => {
+                  onInputChange={(_event, newInputValue) => {
                     setOriginInputValue(newInputValue);
                   }}
                   sx={{ width: 200 }}
@@ -231,7 +231,7 @@ export default function SearchBar() {
                   getOptionLabel={(option: any) =>
                     option?.presentation?.suggestionTitle || ""
                   }
-                  onChange={(event, value: any | null) => {
+                  onChange={(_event, value: any | null) => {
                     setOrigin(value); // store full object
                     setOriginId(value?.entityId || "");
                   }}
@@ -245,7 +245,7 @@ export default function SearchBar() {
                   id="manageable-states-demo"
                   value={destination}
                   inputValue={destinationInputValue}
-                  onInputChange={(event, newInputValue) => {
+                  onInputChange={(_event, newInputValue) => {
                     setDestinationInputValue(newInputValue);
                   }}
                   sx={{ width: 200 }}
@@ -253,7 +253,7 @@ export default function SearchBar() {
                   getOptionLabel={(option: any) =>
                     option?.presentation?.suggestionTitle || ""
                   }
-                  onChange={(event, value: any | null) => {
+                  onChange={(_event, value: any | null) => {
                     setDestination(value);
                     setDestinationId(value?.entityId || "");
                   }}
