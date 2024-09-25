@@ -139,12 +139,12 @@ export default function SearchBar() {
       setSnackbarOpen(true);
     }
   };
-  console.log(originId);
-  console.log(destinationId);
-  console.log(origin);
-  console.log(type.toLowerCase());
-  console.log(passenger);
-  console.log(departure ? departure.format("YYYY-MM-DD") : "");
+//   console.log(originId);
+//   console.log(destinationId);
+//   console.log(origin);
+//   console.log(type.toLowerCase());
+//   console.log(passenger);
+//   console.log(departure ? departure.format("YYYY-MM-DD") : "");
 
   // TO DO: days should be calculated from the depature date and return date
   // TO DO: options in autocomplete should come from the Search Airport API in the Flights collection.

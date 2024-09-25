@@ -9,6 +9,7 @@ import {
   Alert,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import Noflights from "../assets/no-flight.png";
 
 export default function FlightResultsAccordion({
   flights,
@@ -36,11 +37,15 @@ export default function FlightResultsAccordion({
   }
 
   if (flights.length === 0) {
-    return <Typography>No flights found.</Typography>;
+    return (
+      <div>
+        <img className="m-auto" src={Noflights} alt="no-flights" />
+      </div>
+    );
   }
 
   return (
-    <Stack spacing={2}>
+    <Stack className="mx-8 lg:mx-24" spacing={2}>
       {flights.map((flight: any, index: number) => (
         <Accordion key={index}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
