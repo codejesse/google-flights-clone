@@ -57,7 +57,7 @@ export const Navbar = () => {
   );
 
   return (
-    <nav className="flex bg-white py-4 drop-shadow-sm text-bold fixed w-full">
+    <nav className="flex bg-white py-4 drop-shadow-sm text-bold fixed w-full z-[999]">
       <div className="flex mx-8">
         <Menu onClick={toggleDrawer(!open)} className="my-auto" />
         <Drawer open={open} onClose={toggleDrawer(false)}>
