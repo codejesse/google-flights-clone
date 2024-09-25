@@ -1,26 +1,153 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
+import TextField from "@mui/material/TextField";
+import Autocomplete from "@mui/material/Autocomplete";
 import { CompareArrows, PersonOutline, Search } from "@mui/icons-material";
+import axios from "axios";
+
+import dayjs, { Dayjs } from "dayjs";
+import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { Snackbar, Alert } from "@mui/material";
+import FlightResultsAccordion from "./FlightsResults";
 
 export default function SearchBar() {
   const [trip, setTrip] = useState("");
-  const [passenger, setPassenger] = useState("");
+  const [passenger, setPassenger] = useState(1);
   const [type, setType] = useState("");
+
+  const [departure, setDeparture] = useState<Dayjs | null>(dayjs(null));
+  const [returnDate, setReturnDate] = useState<Dayjs | null>(dayjs(null));
+
+  const [origin, setOrigin] = useState<string | null>("");
+  const [originInputValue, setOriginInputValue] = useState("");
+  const [destinationInputValue, setDestinationInputValue] = useState("");
+  const [destination, setDestination] = useState<string | null>("");
+  const [flights, setFlights] = useState([]);
+
+  const [originId, setOriginId] = useState("");
+  const [destinationId, setDestinationId] = useState("");
+  const [originOptions, setOriginOptions] = useState([]);
+  const [destinationOptions, setDestinationOptions] = useState([]);
+
+  const [isLoading, setIsLoading] = useState(false);
+  // Snackbar state for error handling
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
 
   const handleTrip = (event: SelectChangeEvent) => {
     setTrip(event.target.value);
   };
 
-  const handlePassenger = (event: SelectChangeEvent) => {
-    setPassenger(event.target.value);
-  };
-
   const handleFlightType = (event: SelectChangeEvent) => {
     setType(event.target.value);
   };
+
+  // Shared function to fetch airports based on input value
+  // Memoize the fetchAirports function
+  const fetchAirports = useCallback(async (query: string) => {
+    try {
+      const response = await axios.get(
+        `https://sky-scrapper.p.rapidapi.com/api/v1/flights/searchAirport?query=${query}&locale=en-US`,
+        {
+          headers: {
+            "X-RapidAPI-Host": "sky-scrapper.p.rapidapi.com",
+            "X-RapidAPI-Key": import.meta.env.VITE_RAPIDAPI_KEY,
+          },
+        }
+      );
+      return response.data.data;
+    } catch (error) {
+      console.error("Error fetching airport data:", error);
+      setSnackbarMessage("Error fetching airport data.");
+      setSnackbarOpen(true);
+      return [];
+    }
+  }, []);
+
+  // Memoize airport options based on input values
+  const memoizedOriginOptions = useMemo(() => {
+    if (originInputValue.length > 2) {
+      return fetchAirports(originInputValue);
+    }
+    return [];
+  }, [originInputValue, fetchAirports]);
+
+  const memoizedDestinationOptions = useMemo(() => {
+    if (destinationInputValue.length > 2) {
+      return fetchAirports(destinationInputValue);
+    }
+    return [];
+  }, [destinationInputValue, fetchAirports]);
+
+  useEffect(() => {
+    const fetchOptions = async () => {
+      const fetchedOriginOptions = await memoizedOriginOptions;
+      setOriginOptions(fetchedOriginOptions);
+
+      const fetchedDestinationOptions = await memoizedDestinationOptions;
+      setDestinationOptions(fetchedDestinationOptions);
+    };
+    fetchOptions();
+  }, [memoizedOriginOptions, memoizedDestinationOptions]);
+
+  const handleSearch = async () => {
+    const params = {
+      originSkyId: origin,
+      originEntityId: originId,
+      destinationEntityId: destinationId,
+      destinationSkyId: destination,
+      date: departure ? departure.format("YYYY-MM-DD") : "",
+      returnDate: returnDate ? returnDate.format("YYYY-MM-DD") : "",
+      cabinClass: type.toLowerCase(),
+      adults: passenger,
+      sortBy: "best",
+      currency: "USD",
+      market: "en-US",
+      countryCode: "US",
+    };
+
+    try {
+      setIsLoading(true);
+      const response = await axios.get(
+        "https://sky-scrapper.p.rapidapi.com/api/v2/flights/searchFlights",
+        {
+          params,
+          headers: {
+            // put the api key in an env file
+            "X-RapidAPI-Key": import.meta.env.VITE_RAPIDAPI_KEY,
+            "X-RapidAPI-Host": "sky-scrapper.p.rapidapi.com",
+          },
+        }
+      );
+      setFlights(response.data);
+      setIsLoading(false);
+      console.log(flights);
+      console.log(response.data)
+    } catch (error) {
+      console.error("Error fetching flights:", error);
+      setSnackbarMessage("Error fetching flights.");
+      setSnackbarOpen(true);
+    }
+  };
+  console.log(originId);
+  console.log(destinationId);
+  console.log(origin);
+  console.log(type.toLowerCase());
+  console.log(passenger);
+  console.log(departure ? departure.format("YYYY-MM-DD") : "");
+
+  // TO DO: days should be calculated from the depature date and return date
+  // TO DO: options in autocomplete should come from the Search Airport API in the Flights collection.
 
   return (
     <>
@@ -36,18 +163,18 @@ export default function SearchBar() {
                 id="demo-simple-select-standard"
                 value={trip}
                 onChange={handleTrip}
-                label="Age"
+                label="Trip"
               >
-                <MenuItem value="">
-                  <em>None</em>
+                <MenuItem value="Round trip">
+                  <em>Round trip</em>
                 </MenuItem>
-                <MenuItem value={10}>Ten</MenuItem>
-                <MenuItem value={20}>Twenty</MenuItem>
-                <MenuItem value={30}>Thirty</MenuItem>
+                <MenuItem value={"One way"}>One way</MenuItem>
+                <MenuItem value={"Multi-city"}>Multi-way</MenuItem>
+                {/* <MenuItem value={30}>Thirty</MenuItem> */}
               </Select>
             </FormControl>
             <div className="pt-6 md:pt-0 md:pl-6">
-              <FormControl variant="standard" sx={{ m: 1, minWidth: 18 }}>
+              <FormControl variant="standard" sx={{ m: 1, minWidth: 24 }}>
                 <InputLabel id="demo-simple-select-standard-label">
                   <PersonOutline />{" "}
                 </InputLabel>
@@ -55,15 +182,15 @@ export default function SearchBar() {
                   labelId="demo-simple-select-standard-label"
                   id="demo-simple-select-standard"
                   value={passenger}
-                  onChange={handlePassenger}
-                  label="Age"
+                  onChange={(e) => setPassenger(Number(e.target.value))}
+                  label="Passenger"
                 >
-                  <MenuItem value="">
+                  <MenuItem value={1}>
                     <em>1</em>
                   </MenuItem>
-                  <MenuItem value={1}>2</MenuItem>
-                  <MenuItem value={2}>3</MenuItem>
-                  <MenuItem value={3}>4</MenuItem>
+                  <MenuItem value={2}>2</MenuItem>
+                  <MenuItem value={3}>3</MenuItem>
+                  {/* <MenuItem value={3}>4</MenuItem> */}
                 </Select>
               </FormControl>
             </div>
@@ -79,107 +206,113 @@ export default function SearchBar() {
                   onChange={handleFlightType}
                   label="Age"
                 >
-                  <MenuItem value="Economy">
+                  <MenuItem value="economy">
                     <em>Economy</em>
                   </MenuItem>
-                  {/* <MenuItem value={"Economoy"}>Economy</MenuItem> */}
-                  <MenuItem value={"Premium Economy"}>Premium Economy</MenuItem>
-                  <MenuItem value={"Business"}>Business</MenuItem>
-                  <MenuItem value={"First"}>First</MenuItem>
+                  <MenuItem value={"premium_economy"}>Premium Economy</MenuItem>
+                  <MenuItem value={"business"}>Business</MenuItem>
+                  <MenuItem value={"first"}>First</MenuItem>
                 </Select>
               </FormControl>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="grid grid-cols-2 gap-2 border border-gray-200 p-2 rounded">
-              <div className="flex border rounded bg-gray-300 items-center p-2 ">
-                <svg
-                  className="fill-current text-gray-800 mr-2 w-5"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  width="24"
-                  height="24"
-                >
-                  <path
-                    className="heroicon-ui"
-                    d="M12 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-2a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm9 11a1 1 0 0 1-2 0v-2a3 3 0 0 0-3-3H8a3 3 0 0 0-3 3v2a1 1 0 0 1-2 0v-2a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v2z"
-                  />
-                </svg>
-                <input
-                  type="text"
-                  placeholder="Enter text here..."
-                  className="bg-gray-300 max-w-full focus:outline-none text-gray-700"
+              <div className="flex rounded bg-none items-center p-2 ">
+                <Autocomplete
+                  id="manageable-states-demo"
+                  value={origin}
+                  inputValue={originInputValue}
+                  onInputChange={(event, newInputValue) => {
+                    setOriginInputValue(newInputValue);
+                  }}
+                  sx={{ width: 200 }}
+                  options={originOptions}
+                  getOptionLabel={(option: any) =>
+                    option?.presentation?.suggestionTitle || ""
+                  }
+                  onChange={(event, value: any | null) => {
+                    setOrigin(value); // store full object
+                    setOriginId(value?.entityId || "");
+                  }}
+                  renderInput={(params) => (
+                    <TextField {...params} label="Where from?" />
+                  )}
                 />
               </div>
-              <div className="flex border rounded bg-gray-300 items-center p-2 ">
-                <svg
-                  className="fill-current text-gray-800 mr-2 w-5"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  width="24"
-                  height="24"
-                >
-                  <path
-                    className="heroicon-ui"
-                    d="M12 22a10 10 0 1 1 0-20 10 10 0 0 1 0 20zM5.68 7.1A7.96 7.96 0 0 0 4.06 11H5a1 1 0 0 1 0 2h-.94a7.95 7.95 0 0 0 1.32 3.5A9.96 9.96 0 0 1 11 14.05V9a1 1 0 0 1 2 0v5.05a9.96 9.96 0 0 1 5.62 2.45 7.95 7.95 0 0 0 1.32-3.5H19a1 1 0 0 1 0-2h.94a7.96 7.96 0 0 0-1.62-3.9l-.66.66a1 1 0 1 1-1.42-1.42l.67-.66A7.96 7.96 0 0 0 13 4.06V5a1 1 0 0 1-2 0v-.94c-1.46.18-2.8.76-3.9 1.62l.66.66a1 1 0 0 1-1.42 1.42l-.66-.67zM6.71 18a7.97 7.97 0 0 0 10.58 0 7.97 7.97 0 0 0-10.58 0z"
-                  />
-                </svg>
-                <input
-                  type="text"
-                  placeholder="Enter text here..."
-                  className="bg-gray-300 max-w-full focus:outline-none text-gray-700"
+              <div className="flex rounded bg-none items-center p-2 ">
+                <Autocomplete
+                  id="manageable-states-demo"
+                  value={destination}
+                  inputValue={destinationInputValue}
+                  onInputChange={(event, newInputValue) => {
+                    setDestinationInputValue(newInputValue);
+                  }}
+                  sx={{ width: 200 }}
+                  options={destinationOptions}
+                  getOptionLabel={(option: any) =>
+                    option?.presentation?.suggestionTitle || ""
+                  }
+                  onChange={(event, value: any | null) => {
+                    setDestination(value);
+                    setDestinationId(value?.entityId || "");
+                  }}
+                  renderInput={(params) => (
+                    <TextField {...params} label="Where to?" />
+                  )}
                 />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2 border border-gray-200 p-2 rounded">
-              <div className="flex border rounded bg-gray-300 items-center p-2 ">
-                <svg
-                  className="fill-current text-gray-800 mr-2 w-5"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  width="24"
-                  height="24"
-                >
-                  <path
-                    className="heroicon-ui"
-                    d="M14 5.62l-4 2v10.76l4-2V5.62zm2 0v10.76l4 2V7.62l-4-2zm-8 2l-4-2v10.76l4 2V7.62zm7 10.5L9.45 20.9a1 1 0 0 1-.9 0l-6-3A1 1 0 0 1 2 17V4a1 1 0 0 1 1.45-.9L9 5.89l5.55-2.77a1 1 0 0 1 .9 0l6 3A1 1 0 0 1 22 7v13a1 1 0 0 1-1.45.89L15 18.12z"
-                  />
-                </svg>
-                <input
-                  type="text"
-                  placeholder="Enter text here..."
-                  className="bg-gray-300 max-w-full focus:outline-none text-gray-700"
-                />
+              <div className="flex rounded bg-none items-center p-2 ">
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <DemoContainer components={["DatePicker", "DatePicker"]}>
+                    <DatePicker
+                      value={departure}
+                      onChange={(newValue) => setDeparture(newValue)}
+                    />
+                  </DemoContainer>
+                </LocalizationProvider>
               </div>
-              <div className="flex border rounded bg-gray-300 items-center p-2 ">
-                <svg
-                  className="fill-current text-gray-800 mr-2 w-5"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  width="24"
-                  height="24"
-                >
-                  <path
-                    className="heroicon-ui"
-                    d="M13.04 14.69l1.07-2.14a1 1 0 0 1 1.2-.5l6 2A1 1 0 0 1 22 15v5a2 2 0 0 1-2 2h-2A16 16 0 0 1 2 6V4c0-1.1.9-2 2-2h5a1 1 0 0 1 .95.68l2 6a1 1 0 0 1-.5 1.21L9.3 10.96a10.05 10.05 0 0 0 3.73 3.73zM8.28 4H4v2a14 14 0 0 0 14 14h2v-4.28l-4.5-1.5-1.12 2.26a1 1 0 0 1-1.3.46 12.04 12.04 0 0 1-6.02-6.01 1 1 0 0 1 .46-1.3l2.26-1.14L8.28 4zm7.43 5.7a1 1 0 1 1-1.42-1.4L18.6 4H16a1 1 0 0 1 0-2h5a1 1 0 0 1 1 1v5a1 1 0 0 1-2 0V5.41l-4.3 4.3z"
-                  />
-                </svg>
-                <input
-                  type="text"
-                  placeholder="Enter text here..."
-                  className="bg-gray-300 max-w-full focus:outline-none text-gray-700"
-                />
+              <div className="flex rounded bg-none items-center p-2 ">
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <DemoContainer components={["DatePicker", "DatePicker"]}>
+                    <DatePicker
+                      value={returnDate}
+                      onChange={(newValue) => setReturnDate(newValue)}
+                    />
+                  </DemoContainer>
+                </LocalizationProvider>
               </div>
             </div>
           </div>
         </div>
       </div>
       <div className="flex justify-center mt-[-20px]">
-        <button className="flex justify-items-center px-3 gap-2 p-2 border w-28 rounded-full bg-gray-800 text-white">
+        <button
+          onClick={handleSearch}
+          className="flex justify-items-center px-3 gap-2 p-2 border w-28 rounded-full bg-blue-500 text-white"
+        >
           <Search />
-          <p className="my-auto">Search</p>
+          <p className="my-auto">{isLoading ? "Searching..." : "Search"}</p>
         </button>
+        {/* Snackbar for error handling */}
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={6000}
+          onClose={handleSnackbarClose}
+        >
+          <Alert
+            onClose={handleSnackbarClose}
+            severity="error"
+            sx={{ width: "100%" }}
+          >
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
       </div>
+      {/* flights card */}
+      <FlightResultsAccordion flights={flights} />
     </>
   );
 }
