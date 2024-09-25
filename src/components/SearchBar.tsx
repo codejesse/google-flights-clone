@@ -35,6 +35,9 @@ export default function SearchBar() {
   const [originOptions, setOriginOptions] = useState([]);
   const [destinationOptions, setDestinationOptions] = useState([]);
 
+  const [originSkyId, setOriginSkyId] = useState("");
+  const [destinationSkyId, setDestinationSkyId] = useState("");
+
   const [isLoading, setIsLoading] = useState(false);
   // Snackbar state for error handling
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -102,10 +105,10 @@ export default function SearchBar() {
 
   const handleSearch = async () => {
     const params = {
-      originSkyId: origin,
+      originSkyId: originSkyId,
       originEntityId: originId,
       destinationEntityId: destinationId,
-      destinationSkyId: destination,
+      destinationSkyId: destinationSkyId,
       date: departure ? departure.format("YYYY-MM-DD") : "",
       returnDate: returnDate ? returnDate.format("YYYY-MM-DD") : "",
       cabinClass: type.toLowerCase(),
@@ -133,13 +136,14 @@ export default function SearchBar() {
       setIsLoading(false);
       console.log(flights);
       console.log(response.data)
+      console.log(flights);
     } catch (error) {
       console.error("Error fetching flights:", error);
       setSnackbarMessage("Error fetching flights.");
       setSnackbarOpen(true);
     }
   };
-//   console.log(originId);
+  console.log(origin);
 //   console.log(destinationId);
 //   console.log(origin);
 //   console.log(type.toLowerCase());
@@ -232,8 +236,9 @@ export default function SearchBar() {
                     option?.presentation?.suggestionTitle || ""
                   }
                   onChange={(_event, value: any | null) => {
-                    setOrigin(value); // store full object
+                    setOrigin(value);
                     setOriginId(value?.entityId || "");
+                    setOriginSkyId(value?.skyId)
                   }}
                   renderInput={(params) => (
                     <TextField {...params} label="Where from?" />
@@ -256,6 +261,7 @@ export default function SearchBar() {
                   onChange={(_event, value: any | null) => {
                     setDestination(value);
                     setDestinationId(value?.entityId || "");
+                    setDestinationSkyId(value?.skyId)
                   }}
                   renderInput={(params) => (
                     <TextField {...params} label="Where to?" />

@@ -2,6 +2,8 @@
 
 ![Screen Shot 2024-09-25 at 5 52 07 PM](https://github.com/user-attachments/assets/a74444d1-4eca-4d58-ba9d-c55a749188dd)
 
+Loom ![alt text](image.png):
+
 Welcome to the **Google Flights Clone**! This is a React.js-based flight search app using Material UI v6.1.1 and the RapidAPI Sky Scraper API to search and display flight results. The project showcases a user-friendly flight search interface and results display with **Accordion-style flight details**, similar to Google Flights.
 
 ## 🚀 Features
