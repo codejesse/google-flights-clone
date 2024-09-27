@@ -140,12 +140,12 @@ export default function SearchBar() {
       setSnackbarOpen(true);
     }
   };
-//   console.log(origin);
-//   console.log(destinationId);
-//   console.log(origin);
-//   console.log(type.toLowerCase());
-//   console.log(passenger);
-//   console.log(departure ? departure.format("YYYY-MM-DD") : "");
+  //   console.log(origin);
+  //   console.log(destinationId);
+  //   console.log(origin);
+  //   console.log(type.toLowerCase());
+  //   console.log(passenger);
+  //   console.log(departure ? departure.format("YYYY-MM-DD") : "");
 
   // TO DO: days should be calculated from the depature date and return date
   // TO DO: options in autocomplete should come from the Search Airport API in the Flights collection.
@@ -235,7 +235,7 @@ export default function SearchBar() {
                   onChange={(_event, value: any | null) => {
                     setOrigin(value);
                     setOriginId(value?.entityId || "");
-                    setOriginSkyId(value?.skyId)
+                    setOriginSkyId(value?.skyId);
                   }}
                   renderInput={(params) => (
                     <TextField {...params} label="Where from?" />
@@ -258,7 +258,7 @@ export default function SearchBar() {
                   onChange={(_event, value: any | null) => {
                     setDestination(value);
                     setDestinationId(value?.entityId || "");
-                    setDestinationSkyId(value?.skyId)
+                    setDestinationSkyId(value?.skyId);
                   }}
                   renderInput={(params) => (
                     <TextField {...params} label="Where to?" />
