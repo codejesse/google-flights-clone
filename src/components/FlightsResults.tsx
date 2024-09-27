@@ -46,7 +46,7 @@ export default function FlightResultsAccordion({ flights }: { flights: any }) {
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Typography>
                 <strong>Departure:</strong>{" "}
-                {new Date(departure).toLocaleTimeString()} from {origin} {"  "}
+                {new Date(departure).toLocaleTimeString()} from {origin} {" "}
                 {new Date(departure).toLocaleDateString()} - {price}
               </Typography>
             </AccordionSummary>

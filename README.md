@@ -25,7 +25,7 @@ Welcome to the **Google Flights Clone**! This is a React.js-based flight search 
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/google-flights-clone.git
+   git clone https://github.com/codejesse/google-flights-clone.git
    cd google-flights-clone
    ```
 
